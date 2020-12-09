@@ -27,6 +27,7 @@ io.on('connection', (socket) => {
       }
     }]);
     changeStream.on('change', async (change) => {
+      console.log('new message being sent');
       if (
         change.operationType === 'update' &&
         change.updateDescription.updatedFields
