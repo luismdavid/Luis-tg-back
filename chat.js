@@ -17,15 +17,40 @@ io.on('connection', (socket) => {
           model: 'Users',
         },
       });
+
+    Chat.watch([
+      {
+        $match: {
+          operationType: 'insert',
+          'fullDocument.participants': Types.ObjectId(userId),
+        },
+      },
+    ]).on('change', async (change) => {
+      const results = await Chat.find({
+        participants: Types.ObjectId(userId),
+      })
+        .populate('participants', '_id name phoneNumber profileImg')
+        .populate({
+          path: 'messages',
+          populate: {
+            path: 'sender',
+            model: 'Users',
+          },
+        });
+
+      socket.emit('chats-changed', results);
+    });
     socket.emit('chats-changed', results);
   });
 
   socket.on('join-chat', async ({ chatId, userId }) => {
-    const changeStream = Chat.watch([{
-      $match: {
-        'documentKey._id': Types.ObjectId(chatId)
-      }
-    }]);
+    const changeStream = Chat.watch([
+      {
+        $match: {
+          'documentKey._id': Types.ObjectId(chatId),
+        },
+      },
+    ]);
     changeStream.on('change', async (change) => {
       console.log('new message being sent');
       if (
@@ -35,7 +60,10 @@ io.on('connection', (socket) => {
         for (const key in change.updateDescription.updatedFields) {
           const element = change.updateDescription.updatedFields[key];
           if (key.startsWith('messages')) {
-            const message = await Message.findById(element).populate('sender', '_id profileImg name phoneNumber');
+            const message = await Message.findById(element).populate(
+              'sender',
+              '_id profileImg name phoneNumber'
+            );
             io.to(socket.id).emit('new-message', message);
           }
         }

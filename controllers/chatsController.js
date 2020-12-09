@@ -35,10 +35,61 @@ module.exports = {
       });
   },
 
+  deleteChat: async (req, res) => {
+    const { chatId } = req.query;
+
+    if (!chatId) {
+      return res.status(400).json({
+        error: {
+          message: 'Parametros incompletos.',
+          status: 400,
+          stack: 'delete Chat parameters [deleteChat]',
+        },
+      });
+    }
+
+    const newMsg = await Message.create({
+      type: 'text',
+      content: `${req.user.name} Ha salido del chat`,
+      sentDate: new Date(),
+      attachments: [],
+      sender: Types.ObjectId(req.user._id)
+    });
+
+    console.log(newMsg);
+
+    Chat.updateOne(
+      { _id: Types.ObjectId(chatId) },
+      {
+        $pullAll: {
+          participants: [Types.ObjectId(req.user._id)],
+        },
+        $push: {
+          messages: newMsg._id,
+        }
+      }
+    )
+      .then(() => {
+        res.status(201).json({
+          message: 'Se ha eliminado el chat con exito'
+        });
+      })
+      .catch((err) => {
+        console.log(err);
+        res.status(500).json({
+          error: {
+            message: err.messag,
+            status: 500,
+            stack: 'save user to mongoDB [createNewChat]',
+          },
+        });
+      });
+  },
+
   uploadImage: async (req, res) => {
     return res.json({
-      url: `${process.env.HOST}/images/uploads/messages/${req.file.filename}`
-    })
+      url: `${process.env.HOST}/images/uploads/messages/${req.file.filename}`,
+    });
   },
 
   sendNewMessage: async (req, res) => {

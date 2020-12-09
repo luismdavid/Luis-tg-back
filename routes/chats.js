@@ -22,7 +22,10 @@ const storage = multer.diskStorage({
 
 router.post('/', loggedIn, chatsController.createNewChat);
 
-router.post('/message', loggedIn, chatsController.sendNewMessage);
+router
+  .route('/message')
+  .post(loggedIn, chatsController.sendNewMessage)
+  .delete(loggedIn, chatsController.deleteChat);
 
 router.post(
   '/message/upload',
