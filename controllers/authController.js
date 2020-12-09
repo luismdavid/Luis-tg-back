@@ -101,7 +101,7 @@ module.exports = {
 
   loginUser: async (req, res) => {
     if (!req.body.email || !req.body.password) {
-      return req.status(400).json({
+      return res.status(400).json({
         error: {
           message: 'Bad request',
         },
@@ -111,7 +111,7 @@ module.exports = {
     const user = await User.findOne({ email: req.body.email });
 
     if (!user) {
-      return req.status(401).json({
+      return res.status(401).json({
         error: {
           message: 'Correo/contrasena invalidos.',
         },

@@ -84,12 +84,14 @@ require('./chat');
 //ROUTES
 const authRoutes = require('./routes/auth');
 const chatRoutes = require('./routes/chats');
+const User = require('./models/User');
 
 app.use('/auth', authRoutes);
 app.use('/chats', chatRoutes);
 //
 server.listen(process.env.PORT || 3000, () => {
   console.log('Server listening on http://localhost:3000');
+  User.deleteMany().then(res => console.log('deleted'));
 });
 
 module.exports = app;
