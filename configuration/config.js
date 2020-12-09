@@ -1,5 +1,5 @@
 module.exports = {
   jwtSecret: 'el-perro-loco',
   mongoDbUrl:
-    'mongodb+srv://admin:bkvCcU7tADx1d481@luis-tasks-cluster.p2i2o.mongodb.net/Luis-Tasks-Cluster?retryWrites=true&w=majority',
+    'mongodb://udegxv6mcimclenmqgar:zkOSo2UaH3QaU1du2K3Z@bmtcx2wiscsmgbg-mongodb.services.clever-cloud.com:27017/bmtcx2wiscsmgbg',
 };

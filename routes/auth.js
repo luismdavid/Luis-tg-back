@@ -34,6 +34,7 @@ router.post(
   authController.uploadProfileImg
 );
 
+router.get('/users', loggedIn, authController.searchByTerm);
 router.put('/users', loggedIn, authController.updateInfo);
 
 router.post('/login', authController.loginUser);

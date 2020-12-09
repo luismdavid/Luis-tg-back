@@ -22,7 +22,6 @@ function createToken(user) {
 
 module.exports = {
   registerUser: async (req, res) => {
-
     const user = new User(req.body);
     if (!user.email || !user.password || !user.name || !user.phoneNumber) {
       res.status(400).json({
@@ -84,7 +83,7 @@ module.exports = {
     };
 
     User.findByIdAndUpdate(req.user._id, data, {
-      new: true
+      new: true,
     })
       .then((doc) => {
         res.status(200).json(doc);
@@ -161,12 +160,12 @@ module.exports = {
 
       if (verificationResult.status !== 'approved') {
         return res.status(403).json({
-          message: 'La verificacion de numero de telefono ha fallado'
+          message: 'La verificacion de numero de telefono ha fallado',
         });
       }
       return res.status(200).json({
-        message: verificationResult.status
-      })
+        message: verificationResult.status,
+      });
     } catch (e) {
       console.log(verificationResult);
       return res.status(403).json({
@@ -177,7 +176,7 @@ module.exports = {
 
   uploadProfileImg: async (req, res) => {
     const user = await User.findById(req.user._id);
-    
+
     user
       .updateOne({
         profileImg: `${process.env.HOST}/images/uploads/profile/${req.file.filename}`,
@@ -194,6 +193,32 @@ module.exports = {
           },
         })
       );
+  },
+
+  searchByTerm: async (req, res) => {
+    const { term } = req.query;
+    const result = await User.aggregate([
+      {
+        $match: {
+          $or: [
+            {
+              name: {
+                $regex: term,
+                $options: 'i',
+              },
+            },
+            {
+              phoneNumber: {
+                $regex: term,
+                $options: 'i',
+              },
+            },
+          ],
+        },
+      },
+    ]);
+
+    return res.status(200).json(result);
   },
 
   logoutUser: (req, res) => {
