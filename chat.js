@@ -10,6 +10,7 @@ io.on('connection', (socket) => {
       participants: Types.ObjectId(userId),
     })
       .populate('participants', '_id name phoneNumber profileImg')
+      .populate('admins', '_id name phoneNumber profileImg')
       .populate({
         path: 'messages',
         populate: {
@@ -21,8 +22,19 @@ io.on('connection', (socket) => {
     Chat.watch([
       {
         $match: {
-          operationType: 'insert',
-          'fullDocument.participants': Types.ObjectId(userId),
+          $or: [
+            {
+              operationType: 'insert',
+              'fullDocument.participants': Types.ObjectId(userId)
+            },
+            {
+              operationType: 'update',
+              'updateDescription.updatedFields.participants': Types.ObjectId(userId)
+            },
+            {
+              operationType: 'update',
+            }
+          ]
         },
       },
     ]).on('change', async (change) => {
@@ -30,6 +42,7 @@ io.on('connection', (socket) => {
         participants: Types.ObjectId(userId),
       })
         .populate('participants', '_id name phoneNumber profileImg')
+        .populate('admins', '_id name phoneNumber profileImg')
         .populate({
           path: 'messages',
           populate: {
@@ -44,7 +57,7 @@ io.on('connection', (socket) => {
   });
 
   socket.on('join-chat', async ({ chatId, userId }) => {
-    const changeStream = Chat.watch([
+    let changeStream = Chat.watch([
       {
         $match: {
           'documentKey._id': Types.ObjectId(chatId),
@@ -64,14 +77,19 @@ io.on('connection', (socket) => {
               'sender',
               '_id profileImg name phoneNumber'
             );
+
             io.to(socket.id).emit('new-message', message);
           }
         }
       }
-      //io.in(chatId).emit('chat-changed', change);
+    });
+    socket.on('leave-chat', async () => {
+      await changeStream.close();
+      console.log('chat-left');
     });
     const chat = await Chat.findById(chatId)
       .populate('participants', '_id name phoneNumber profileImg')
+      .populate('admins', '_id name phoneNumber profileImg')
       .populate({
         path: 'messages',
         populate: {

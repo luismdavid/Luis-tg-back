@@ -29,7 +29,34 @@ module.exports = {
           error: {
             message: err.messag,
             status: 500,
-            stack: 'save user to mongoDB [createNewChat]',
+            stack: 'save chat to mongoDB [createNewChat]',
+          },
+        });
+      });
+  },
+
+  updateChat: async (req, res) => {
+    Chat.updateOne({ _id: req.body._id }, req.body)
+      .then(async () => {
+        const chat = await Chat.findById(req.body._id)
+          .populate('admins', '_id name profileImg phoneNumber')
+          .populate('participants', '_id name profileImg phoneNumber')
+          .populate({
+            path: 'messages',
+            populate: {
+              path: 'sender',
+              model: 'Users',
+            },
+          });
+        res.status(201).json(chat);
+      })
+      .catch((err) => {
+        console.log(err);
+        res.status(500).json({
+          error: {
+            message: err.messag,
+            status: 500,
+            stack: 'update chat to mongoDB [updateChat]',
           },
         });
       });
@@ -53,7 +80,7 @@ module.exports = {
       content: `${req.user.name} Ha salido del chat`,
       sentDate: new Date(),
       attachments: [],
-      sender: Types.ObjectId(req.user._id)
+      sender: Types.ObjectId(req.user._id),
     });
 
     console.log(newMsg);
@@ -66,12 +93,12 @@ module.exports = {
         },
         $push: {
           messages: newMsg._id,
-        }
+        },
       }
     )
       .then(() => {
         res.status(201).json({
-          message: 'Se ha eliminado el chat con exito'
+          message: 'Se ha eliminado el chat con exito',
         });
       })
       .catch((err) => {

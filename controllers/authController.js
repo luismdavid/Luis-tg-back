@@ -4,6 +4,8 @@ const twilio = require('twilio')(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN);
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const config = require('../configuration/config');
+const Chat = require('../models/Chat');
+const Message = require('../models/Message');
 
 function createToken(user) {
   return jwt.sign(

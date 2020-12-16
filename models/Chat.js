@@ -10,13 +10,17 @@ const chatSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: 'Users',
   }],
+  admins: [{
+    type: Schema.Types.ObjectId,
+    ref: 'Users'
+  }],
   messages: [{
     type: Schema.Types.ObjectId,
     ref: 'Messages'
   }],
-  isPrivate: {
-    type: Boolean,
-    default: true
+  type: {
+    type: String,
+    default: 'private'
   },
   image: {
     type: String,

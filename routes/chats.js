@@ -20,7 +20,10 @@ const storage = multer.diskStorage({
   },
 });
 
-router.post('/', loggedIn, chatsController.createNewChat);
+router
+  .route('/')
+  .post(loggedIn, chatsController.createNewChat)
+  .put(loggedIn, chatsController.updateChat);
 
 router
   .route('/message')
